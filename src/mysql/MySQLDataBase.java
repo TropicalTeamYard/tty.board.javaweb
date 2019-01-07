@@ -57,7 +57,7 @@ public class MySQLDataBase {
 					data.put("nickname",nickname);
 					data.put("priority", rs.getInt("priority"));
 					data.put("email", rs.getString("email"));
-					data.put("portrait", rs.getInt("portrait"));
+					data.put("portrait", rs.getBlob("portrait"));
 					isExist=true;
 				}
 				
