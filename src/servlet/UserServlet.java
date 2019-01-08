@@ -45,19 +45,38 @@ public class UserServlet extends HttpServlet {
 		response.setCharacterEncoding("UTF-8");
 		System.out.println("-----POST---UserServlet----");
 		String method=request.getParameter("method");
+		
+		String password;String userid;String nickname;String token;
+		
 		if(method!=null) {
 			System.out.println("method = "+method);
 			switch (method) {
 			case "login":
-				String userid=request.getParameter("userid");
-				String password=request.getParameter("password");
-				if(userid==null||password==null) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or passowrd'}");return;}
+				userid=request.getParameter("userid");
+				password=request.getParameter("password");
+				if(userid==null||userid==""||password==null||password=="") {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or passowrd'}");return;}
 				response.getWriter().write(MySQLDataBase.Login(userid, password));
+				break;
+				
+			case "autologin":
+				userid=request.getParameter("userid");
+				token=request.getParameter("token");
+				if(token==""||token==null||userid==""||userid==null) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or passowrd'}");return;}
+				response.getWriter().write(MySQLDataBase.Token(userid, token));
+				break;
+				
+			case "register":
+				nickname=request.getParameter("nickname");
+				password=request.getParameter("password");
+				if(nickname==null||nickname==""||password==null||password=="") {response.getWriter().write("{'code':-100,'msg':'invalid request : null nickname or passowrd'}");return;}
+				System.out.println(nickname+" "+password);
+				response.getWriter().write(MySQLDataBase.Register(nickname, password));
 				break;
 
 			default:
 				System.out.println("invalid request");
 				response.getWriter().write("{'code':-100,'msg':'invalid request'}");
+				
 				break;
 			}
 		} else {

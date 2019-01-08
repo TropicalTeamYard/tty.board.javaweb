@@ -7,6 +7,6 @@
 <title>留言板</title>
 </head>
 <body>
-Welcome to board Server project ! 留言板
+Welcome to board Server project !
 </body>
 </html>
