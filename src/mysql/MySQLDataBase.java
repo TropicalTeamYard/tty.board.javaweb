@@ -8,6 +8,8 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.mysql.jdbc.Blob;
+
 import net.sf.json.JSONObject;
 import tools.CreditUtil;
 import tools.StringCollector;
@@ -48,6 +50,92 @@ public class MySQLDataBase {
 		System.out.println(jsonObj.toString());
 		return jsonObj.toString();
 	}
+	
+	public static String ChangeInfo(String userid, String token, String nickname, String email, byte[] portrait){
+		Map<String,Object> data=new HashMap<String,Object>();
+		String newToken=CreditUtil.GetToken(userid, 0);
+		boolean isExist = false;
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			System.out.println("-----Connecting-----");
+			Connection conn = DriverManager.getConnection(StringCollector.MySQLConnStr, StringCollector.SQLAccout,
+					StringCollector.SQLPassword);
+
+			if (!conn.isClosed()) {
+				System.out.println("-----Connect Succeed-----");
+
+				System.out.println("-----Returning-----");
+				PreparedStatement pStatement=conn.prepareStatement("select * from user where userid=? AND token=?");
+				pStatement.setString(1, userid);
+				pStatement.setString(2, token);
+				ResultSet rs = pStatement.executeQuery();
+				
+				while (rs.next()) {
+					if(nickname==null) {nickname=rs.getString("nickname");}
+					if(email==null) {email=rs.getString("email");}
+					
+					// TODO 解决Bug
+					if(portrait==null&&rs.getBlob("portrait").length()>0) {
+						java.sql.Blob blob = conn.createBlob();
+						blob=rs.getBlob("portrait");
+						portrait=blob.getBytes(1, (int) blob.length());
+					}
+					System.out.println(rs.getString("userid")+" "+rs.getString("nickname")+" "+rs.getString("password")+" "+rs.getString("email"));
+					
+					isExist=true;
+				}
+				
+				if(isExist) {
+					
+					pStatement=conn.prepareStatement("UPDATE user SET nickname=?,email=?,portrait=?,token=? WHERE userid=?");
+					pStatement.setString(1, nickname);
+					pStatement.setString(2, email);
+					
+					java.sql.Blob blob = conn.createBlob();
+					if(portrait!=null) {
+						blob.setBytes(1, portrait);
+					}
+					
+					pStatement.setBlob(3, blob);
+					pStatement.setString(4, newToken);
+					pStatement.setString(5, userid);
+					pStatement.executeUpdate();
+					data.put("code", 0);
+					data.put("msg", "update succeed");
+					data.put("nickname", nickname);
+					data.put("email", email);
+					data.put("portrait", portrait);
+					data.put("token", newToken);
+				}
+				
+				if(!rs.isClosed()) rs.close();
+				if(!pStatement.isClosed()) pStatement.close();
+				if(!conn.isClosed()) conn.close();
+				
+				if(!isExist) {
+					data.put("code", -104);
+					data.put("msg", "update failed, userid and token not match");
+				}
+			}
+			
+			
+		} catch (ClassNotFoundException e) {
+			data.put("code", -104);
+			data.put("msg", "sever error 104");
+			e.printStackTrace();
+		} catch (SQLException e) {
+			data.put("code", -104);
+			data.put("msg", "sever error 104");
+			e.printStackTrace();
+		}
+		
+		
+		JSONObject temp=JSONObject.fromObject(data);
+		
+		System.out.println(temp.toString());
+		
+		return temp.toString();
+	} 
 	
 	public static Map<String,Object> LoginCheck(String userid, String password) {
 		System.out.println("-----Init-Login-----");
@@ -268,5 +356,6 @@ public class MySQLDataBase {
 		return data;
 	}
  
+	
 	
 }

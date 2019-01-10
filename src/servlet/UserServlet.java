@@ -6,6 +6,9 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.sql.rowset.serial.SerialBlob;
+
+import com.mysql.jdbc.Blob;
 
 import mysql.MySQLDataBase;
 
@@ -46,7 +49,7 @@ public class UserServlet extends HttpServlet {
 		System.out.println("-----POST---UserServlet----");
 		String method=request.getParameter("method");
 		
-		String password;String userid;String nickname;String token;
+		String password, userid, nickname, token, email; byte[] portrait = null;
 		
 		if(method!=null) {
 			System.out.println("method = "+method);
@@ -61,7 +64,7 @@ public class UserServlet extends HttpServlet {
 			case "autologin":
 				userid=request.getParameter("userid");
 				token=request.getParameter("token");
-				if(token==""||token==null||userid==""||userid==null) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or passowrd'}");return;}
+				if(token==""||token==null||userid==""||userid==null) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or token'}");return;}
 				response.getWriter().write(MySQLDataBase.Token(userid, token));
 				break;
 				
@@ -71,6 +74,16 @@ public class UserServlet extends HttpServlet {
 				if(nickname==null||nickname==""||password==null||password=="") {response.getWriter().write("{'code':-100,'msg':'invalid request : null nickname or passowrd'}");return;}
 				System.out.println(nickname+" "+password);
 				response.getWriter().write(MySQLDataBase.Register(nickname, password));
+				break;
+				
+			case "changeinfo":
+				userid=request.getParameter("userid");
+				token=request.getParameter("token");
+				nickname=request.getParameter("nickname");
+				email=request.getParameter("email");
+				if(request.getParameter("portrait")!=null) {portrait=request.getParameter("portrait").getBytes();}
+				if(token==""||token==null||userid==""||userid==null) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or token'}");return;}
+				response.getWriter().write(MySQLDataBase.ChangeInfo(userid, token, nickname, email, portrait));
 				break;
 
 			default:
