@@ -11,6 +11,7 @@ import javax.sql.rowset.serial.SerialBlob;
 import com.mysql.jdbc.Blob;
 
 import mysql.MySQLDataBase;
+import net.sf.json.JSONArray;
 
 /**
  * Servlet implementation class UserServlet
@@ -84,6 +85,29 @@ public class UserServlet extends HttpServlet {
 				if(request.getParameter("portrait")!=null) {portrait=request.getParameter("portrait").getBytes();}
 				if(token==""||token==null||userid==""||userid==null) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or token'}");return;}
 				response.getWriter().write(MySQLDataBase.ChangeInfo(userid, token, nickname, email, portrait));
+				break;
+				
+			case "getuserinfo":
+				userid=request.getParameter("userid");
+				token=request.getParameter("token");
+				if(token==""||token==null||userid==""||userid==null) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or token'}");return;}
+				response.getWriter().write(MySQLDataBase.GetUserInfo(userid, token));
+				break;
+				
+			case "getpublicinfo":
+				String user=request.getParameter("userids");
+				if(user==""||user==null) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userids'}");return;}
+				String[] userids;
+				JSONArray array=JSONArray.fromObject(user);
+				userids=new String[array.size()];
+				if(array.size()<=0) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userids'}");return;}
+				for(int i=0;i<array.size();i++) {
+					userids[i]=array.optString(i);
+					System.out.println(array.opt(i));
+				}
+				
+				System.out.println(userids[0]);
+				response.getWriter().write(MySQLDataBase.GetUserInfo(userids));
 				break;
 
 			default:

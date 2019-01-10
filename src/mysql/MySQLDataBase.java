@@ -8,8 +8,6 @@ import java.sql.SQLException;
 import java.util.HashMap;
 import java.util.Map;
 
-import com.mysql.jdbc.Blob;
-
 import net.sf.json.JSONObject;
 import tools.CreditUtil;
 import tools.StringCollector;
@@ -74,8 +72,7 @@ public class MySQLDataBase {
 					if(nickname==null) {nickname=rs.getString("nickname");}
 					if(email==null) {email=rs.getString("email");}
 					
-					// TODO 解决Bug
-					if(portrait==null&&rs.getBlob("portrait").length()>0) {
+					if(portrait==null) {
 						java.sql.Blob blob = conn.createBlob();
 						blob=rs.getBlob("portrait");
 						portrait=blob.getBytes(1, (int) blob.length());
@@ -278,7 +275,7 @@ public class MySQLDataBase {
 		System.out.println("-----Check-Register-----");
 		
 
-		long newid = 0;
+		long newid = 10001;
 		Map<String,Object> data=new HashMap<String,Object>();
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
@@ -300,11 +297,15 @@ public class MySQLDataBase {
 				
 				if(newid>10000) {
 					boolean isInsertSucceed=false;
-					pStatement=conn.prepareStatement("INSERT INTO user (userid,nickname,password,priority,registertime) VALUES (?,?,?,0,?)");
+					pStatement=conn.prepareStatement("INSERT INTO user (userid,nickname,password,priority,registertime,portrait,email,token) VALUES (?,?,?,0,?,?,'yourname@server.com',?)");
 					pStatement.setString(1, String.valueOf(newid));
 					pStatement.setString(2, nickname);
 					pStatement.setString(3, password);
 					pStatement.setString(4, TimeUtil.getTime());
+					java.sql.Blob blob = conn.createBlob();
+					blob.setBytes(1, "00000000".getBytes());
+					pStatement.setBlob(5, blob);
+					pStatement.setString(6, CreditUtil.GetToken(nickname, 0));
 					pStatement.execute();
 					
 					pStatement=conn.prepareStatement("select * from user where userid=?");
@@ -355,7 +356,145 @@ public class MySQLDataBase {
 		
 		return data;
 	}
- 
+
 	
+	public static String GetUserInfo(String userid, String token) {
+		String nickname = null,email = null,registertime = null;int priority = 0;byte[] portrait = null;
+		Map<String,Object> data=new HashMap<String,Object>();
+		String newToken=CreditUtil.GetToken(userid, 0);
+		boolean isExist = false;
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			System.out.println("-----Connecting-----");
+			Connection conn = DriverManager.getConnection(StringCollector.MySQLConnStr, StringCollector.SQLAccout,
+					StringCollector.SQLPassword);
+
+			if (!conn.isClosed()) {
+				System.out.println("-----Connect Succeed-----");
+
+				System.out.println("-----Returning-----");
+				PreparedStatement pStatement=conn.prepareStatement("select * from user where userid=? AND token=?");
+				pStatement.setString(1, userid);
+				pStatement.setString(2, token);
+				ResultSet rs = pStatement.executeQuery();
+				
+				while (rs.next()) {
+					nickname=rs.getString("nickname");
+					email=rs.getString("email");
+					registertime=rs.getString("registertime");
+					java.sql.Blob blob = conn.createBlob();
+					blob=rs.getBlob("portrait");
+					portrait=blob.getBytes(1, (int) blob.length());
+					priority=rs.getInt("priority");
+					//System.out.println(rs.getString("userid")+" "+rs.getString("nickname")+" "+rs.getString("password")+" "+rs.getString("email"));
+					
+					isExist=true;
+				}
+				
+				if(isExist) {
+					pStatement=conn.prepareStatement("UPDATE user SET token=? WHERE userid=?");
+					pStatement.setString(1, newToken);
+					pStatement.setString(2, userid);
+					pStatement.execute();
+					data.put("code", 0);
+					data.put("msg", "get info succeed");
+					data.put("nickname", nickname);
+					data.put("email", email);
+					data.put("registertime", registertime);
+					data.put("priority", priority);
+					data.put("userid", userid);
+					data.put("portrait", portrait);
+					data.put("token", newToken);
+					
+				}
+				
+				if(!rs.isClosed()) rs.close();
+				if(!pStatement.isClosed()) pStatement.close();
+				if(!conn.isClosed()) conn.close();
+				
+				if(!isExist) {
+					data.put("code", -104);
+					data.put("msg", "update failed, userid and token not match");
+				}
+			}
+			
+			
+		} catch (ClassNotFoundException e) {
+			data.put("code", -105);
+			data.put("msg", "sever error 105");
+			e.printStackTrace();
+		} catch (SQLException e) {
+			data.put("code", -105);
+			data.put("msg", "sever error 105");
+			e.printStackTrace();
+		}
+		
+		
+		JSONObject temp=JSONObject.fromObject(data);
+		
+		System.out.println(temp.toString());
+		
+		return temp.toString();
+	}
+ 
+	public static String GetUserInfo(String userids[]) {
+		
+		
+		Map<String,Object> data=new HashMap<String,Object>();
+		User[] users=new User[userids.length];
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			System.out.println("-----Connecting-----");
+			Connection conn = DriverManager.getConnection(StringCollector.MySQLConnStr, StringCollector.SQLAccout,
+					StringCollector.SQLPassword);
+
+			if (!conn.isClosed()) {
+				System.out.println("-----Connect Succeed-----");
+
+				System.out.println("-----Returning-----");
+				PreparedStatement pStatement = null;
+				ResultSet rs = null;
+				for(int i=0;i<userids.length;i++) {
+					pStatement=conn.prepareStatement("select * from user where userid=?");
+					pStatement.setString(1, userids[i]);
+					rs=pStatement.executeQuery();
+					while(rs.next()) {
+						users[i]=new User();
+						users[i].setUserid(userids[i]);
+						users[i].setNickname(rs.getString("nickname"));
+						java.sql.Blob blob = conn.createBlob();
+						blob=rs.getBlob("portrait");
+						users[i].setPortrait(blob.getBytes(1, (int) blob.length()));
+					}
+				}
+				
+				data.put("code", 0);
+				data.put("msg", "get user info succeed");
+				data.put("users", users);
+				
+				if(!rs.isClosed()) rs.close();
+				if(!pStatement.isClosed()) pStatement.close();
+				if(!conn.isClosed()) conn.close();
+				
+			}
+			
+			
+		} catch (ClassNotFoundException e) {
+			data.put("code", -106);
+			data.put("msg", "sever error 106");
+			e.printStackTrace();
+		} catch (SQLException e) {
+			data.put("code", -106);
+			data.put("msg", "sever error 106");
+			e.printStackTrace();
+		}
+		
+		
+		JSONObject temp=JSONObject.fromObject(data);
+		
+		System.out.println(temp.toString());
+		
+		return temp.toString();
+	}
 	
 }
