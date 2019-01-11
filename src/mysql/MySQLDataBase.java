@@ -50,6 +50,7 @@ public class MySQLDataBase {
 	}
 	
 	public static String ChangeInfo(String userid, String token, String nickname, String email, byte[] portrait){
+		System.out.println("-----ChangeUserInfo-----");
 		Map<String,Object> data=new HashMap<String,Object>();
 		String newToken=CreditUtil.GetToken(userid, 0);
 		boolean isExist = false;
@@ -62,7 +63,6 @@ public class MySQLDataBase {
 			if (!conn.isClosed()) {
 				System.out.println("-----Connect Succeed-----");
 
-				System.out.println("-----Returning-----");
 				PreparedStatement pStatement=conn.prepareStatement("select * from user where userid=? AND token=?");
 				pStatement.setString(1, userid);
 				pStatement.setString(2, token);
@@ -150,7 +150,6 @@ public class MySQLDataBase {
 			if (!conn.isClosed()) {
 				System.out.println("-----Connect Succeed-----");
 
-				System.out.println("-----Returning-----");
 				PreparedStatement pStatement=conn.prepareStatement("select * from user where userid=? AND password=?");
 				pStatement.setString(1, userid);
 				pStatement.setString(2, password);
@@ -221,7 +220,6 @@ public class MySQLDataBase {
 			if (!conn.isClosed()) {
 				System.out.println("-----Connect Succeed-----");
 
-				System.out.println("-----Returning-----");
 				PreparedStatement pStatement=conn.prepareStatement("select * from user where userid=? AND token=?");
 				pStatement.setString(1, userid);
 				pStatement.setString(2, token);
@@ -286,7 +284,6 @@ public class MySQLDataBase {
 			if (!conn.isClosed()) {
 				System.out.println("-----Connect Succeed-----");
 
-				System.out.println("-----Returning-----");
 				PreparedStatement pStatement=conn.prepareStatement("select * from user order by _id DESC limit 1");
 				ResultSet rs = pStatement.executeQuery();
 				
@@ -359,6 +356,8 @@ public class MySQLDataBase {
 
 	
 	public static String GetUserInfo(String userid, String token) {
+		System.out.println("-----GetUserInfo-----");
+		
 		String nickname = null,email = null,registertime = null;int priority = 0;byte[] portrait = null;
 		Map<String,Object> data=new HashMap<String,Object>();
 		String newToken=CreditUtil.GetToken(userid, 0);
@@ -372,7 +371,6 @@ public class MySQLDataBase {
 			if (!conn.isClosed()) {
 				System.out.println("-----Connect Succeed-----");
 
-				System.out.println("-----Returning-----");
 				PreparedStatement pStatement=conn.prepareStatement("select * from user where userid=? AND token=?");
 				pStatement.setString(1, userid);
 				pStatement.setString(2, token);
@@ -413,7 +411,7 @@ public class MySQLDataBase {
 				if(!conn.isClosed()) conn.close();
 				
 				if(!isExist) {
-					data.put("code", -104);
+					data.put("code", -105);
 					data.put("msg", "update failed, userid and token not match");
 				}
 			}
@@ -438,7 +436,7 @@ public class MySQLDataBase {
 	}
  
 	public static String GetUserInfo(String userids[]) {
-		
+		System.out.println("-----GetUserInfo-----");
 		
 		Map<String,Object> data=new HashMap<String,Object>();
 		User[] users=new User[userids.length];
@@ -450,8 +448,7 @@ public class MySQLDataBase {
 
 			if (!conn.isClosed()) {
 				System.out.println("-----Connect Succeed-----");
-
-				System.out.println("-----Returning-----");
+				
 				PreparedStatement pStatement = null;
 				ResultSet rs = null;
 				for(int i=0;i<userids.length;i++) {
@@ -486,6 +483,72 @@ public class MySQLDataBase {
 		} catch (SQLException e) {
 			data.put("code", -106);
 			data.put("msg", "sever error 106");
+			e.printStackTrace();
+		}
+		
+		
+		JSONObject temp=JSONObject.fromObject(data);
+		
+		System.out.println(temp.toString());
+		
+		return temp.toString();
+	}
+	
+	public static String ChangePassword(String userid, String password, String newPassword) {
+		System.out.println("-----Change-Password-----");
+		
+		Map<String,Object> data=new HashMap<String,Object>();
+		String newToken=CreditUtil.GetToken(userid, 0);
+		boolean isExist = false;
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+			System.out.println("-----Connecting-----");
+			Connection conn = DriverManager.getConnection(StringCollector.MySQLConnStr, StringCollector.SQLAccout,
+					StringCollector.SQLPassword);
+
+			if (!conn.isClosed()) {
+				System.out.println("-----Connect Succeed-----");
+				
+				PreparedStatement pStatement=conn.prepareStatement("select * from user where userid=? AND password=?");
+				pStatement.setString(1, userid);
+				pStatement.setString(2, password);
+				ResultSet rs = pStatement.executeQuery();
+				
+				while (rs.next()) {
+					isExist=true;
+				}
+				
+				if(isExist) {
+					pStatement=conn.prepareStatement("UPDATE user SET token=?,password=? WHERE userid=?");
+					pStatement.setString(1, newToken);
+					pStatement.setString(2, newPassword);
+					pStatement.setString(3, userid);
+					pStatement.execute();
+					data.put("code", 0);
+					data.put("msg", "change password succeed");
+					//data.put("token", newToken);
+					System.out.println("newToken "+newToken);
+					
+				}
+				
+				if(!rs.isClosed()) rs.close();
+				if(!pStatement.isClosed()) pStatement.close();
+				if(!conn.isClosed()) conn.close();
+				
+				if(!isExist) {
+					data.put("code", -107);
+					data.put("msg", "update failed, userid and password not match");
+				}
+			}
+			
+			
+		} catch (ClassNotFoundException e) {
+			data.put("code", -107);
+			data.put("msg", "sever error 107");
+			e.printStackTrace();
+		} catch (SQLException e) {
+			data.put("code", -107);
+			data.put("msg", "sever error 107");
 			e.printStackTrace();
 		}
 		

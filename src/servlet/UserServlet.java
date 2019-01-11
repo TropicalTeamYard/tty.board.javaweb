@@ -109,6 +109,14 @@ public class UserServlet extends HttpServlet {
 				System.out.println(userids[0]);
 				response.getWriter().write(MySQLDataBase.GetUserInfo(userids));
 				break;
+				
+			case "changepassword":
+				userid=request.getParameter("userid");
+				password=request.getParameter("password");
+				String newPassword=request.getParameter("newpassword");
+				if(userid==null||userid==""||password==null||password==""||newPassword==null||newPassword=="") {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or passowrd or newpassword'}");return;}
+				response.getWriter().write(MySQLDataBase.ChangePassword(userid, password, newPassword));
+				break;
 
 			default:
 				System.out.println("invalid request");
