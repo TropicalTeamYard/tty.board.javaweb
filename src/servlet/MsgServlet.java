@@ -22,7 +22,6 @@ public class MsgServlet extends HttpServlet {
      */
     public MsgServlet() {
         super();
-        // TODO Auto-generated constructor stub
     }
 
 	/**
@@ -39,13 +38,13 @@ public class MsgServlet extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
-	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		request.setCharacterEncoding("UTF-8");
 		response.setCharacterEncoding("UTF-8");
 		System.out.println("-----POST---MsgServlet----");
 		String method=request.getParameter("method");
 		
-		String password, userid, nickname, token, email; byte[] portrait = null;
+		String password, userid, nickname, token, email, portrait;
 		
 		if(method!=null) {
 			System.out.println("method = "+method);
@@ -53,21 +52,21 @@ public class MsgServlet extends HttpServlet {
 			case "login":
 				userid=request.getParameter("userid");
 				password=request.getParameter("password");
-				if(userid==null||userid==""||password==null||password=="") {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or passowrd'}");return;}
+				if(userid==null||userid.equals("")||password==null||password.equals("")) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or passowrd'}");return;}
 				response.getWriter().write(MySQLUser.Login(userid, password));
 				break;
 				
 			case "autologin":
 				userid=request.getParameter("userid");
 				token=request.getParameter("token");
-				if(token==""||token==null||userid==""||userid==null) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or token'}");return;}
+				if(token==null||token.equals("")||userid==null||userid.equals("")) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or token'}");return;}
 				response.getWriter().write(MySQLUser.Token(userid, token));
 				break;
 				
 			case "register":
 				nickname=request.getParameter("nickname");
 				password=request.getParameter("password");
-				if(nickname==null||nickname==""||password==null||password=="") {response.getWriter().write("{'code':-100,'msg':'invalid request : null nickname or passowrd'}");return;}
+				if(nickname==null||nickname.equals("")||password==null||password.equals("")) {response.getWriter().write("{'code':-100,'msg':'invalid request : null nickname or passowrd'}");return;}
 				System.out.println(nickname+" "+password);
 				response.getWriter().write(MySQLUser.Register(nickname, password));
 				break;
@@ -77,21 +76,21 @@ public class MsgServlet extends HttpServlet {
 				token=request.getParameter("token");
 				nickname=request.getParameter("nickname");
 				email=request.getParameter("email");
-				if(request.getParameter("portrait")!=null) {portrait=request.getParameter("portrait").getBytes();}
-				if(token==""||token==null||userid==""||userid==null) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or token'}");return;}
+				portrait=request.getParameter("portrait");
+				if(token==null||token.equals("")||userid==null||userid.equals("")) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or token'}");return;}
 				response.getWriter().write(MySQLUser.ChangeInfo(userid, token, nickname, email, portrait));
 				break;
 				
 			case "getuserinfo":
 				userid=request.getParameter("userid");
 				token=request.getParameter("token");
-				if(token==""||token==null||userid==""||userid==null) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or token'}");return;}
+				if(token==null||token.equals("")||userid==null||userid.equals("")) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or token'}");return;}
 				response.getWriter().write(MySQLUser.GetUserInfo(userid, token));
 				break;
 				
 			case "getpublicinfo":
 				String user=request.getParameter("userids");
-				if(user==""||user==null) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userids'}");return;}
+				if(user==null||user.equals("")) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userids'}");return;}
 				String[] userids;
 				JSONArray array=JSONArray.fromObject(user);
 				userids=new String[array.size()];
@@ -109,7 +108,7 @@ public class MsgServlet extends HttpServlet {
 				userid=request.getParameter("userid");
 				password=request.getParameter("password");
 				String newPassword=request.getParameter("newpassword");
-				if(userid==null||userid==""||password==null||password==""||newPassword==null||newPassword=="") {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or passowrd or newpassword'}");return;}
+				if(userid==null||userid.equals("")||password==null||password.equals("")||newPassword==null||newPassword.equals("")) {response.getWriter().write("{'code':-100,'msg':'invalid request : null userid or passowrd or newpassword'}");return;}
 				response.getWriter().write(MySQLUser.ChangePassword(userid, password, newPassword));
 				break;
 
