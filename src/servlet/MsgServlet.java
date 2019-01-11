@@ -6,24 +6,21 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.sql.rowset.serial.SerialBlob;
-
-import com.mysql.jdbc.Blob;
 
 import mysql.MySQLUser;
 import net.sf.json.JSONArray;
 
 /**
- * Servlet implementation class UserServlet
+ * Servlet implementation class MsgServlet
  */
-@WebServlet("/user")
-public class UserServlet extends HttpServlet {
+@WebServlet("/msg")
+public class MsgServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public UserServlet() {
+    public MsgServlet() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -32,7 +29,6 @@ public class UserServlet extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
 		request.setCharacterEncoding("UTF-8");
 		response.setCharacterEncoding("UTF-8");
 		System.out.println("-----GET---UserServlet----");
@@ -44,10 +40,9 @@ public class UserServlet extends HttpServlet {
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		
 		request.setCharacterEncoding("UTF-8");
 		response.setCharacterEncoding("UTF-8");
-		System.out.println("-----POST---UserServlet----");
+		System.out.println("-----POST---MsgServlet----");
 		String method=request.getParameter("method");
 		
 		String password, userid, nickname, token, email; byte[] portrait = null;
@@ -127,7 +122,6 @@ public class UserServlet extends HttpServlet {
 		} else {
 			System.out.println("Helloworld");
 		}
-		//response.getWriter().append("留言板 Served at: ").append(request.getContextPath());
 	}
 
 }

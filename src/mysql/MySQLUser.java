@@ -14,7 +14,7 @@ import tools.StringCollector;
 import tools.TimeUtil;
 
 
-public class MySQLDataBase {
+public class MySQLUser {
 
 	public static String Login(String userid, String password){
 		Map<String,Object> data=new HashMap<String,Object>();
@@ -412,7 +412,7 @@ public class MySQLDataBase {
 				
 				if(!isExist) {
 					data.put("code", -105);
-					data.put("msg", "update failed, userid and token not match");
+					data.put("msg", "get info failed, userid and token not match");
 				}
 			}
 			
