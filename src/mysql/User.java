@@ -15,8 +15,8 @@ public class User{
 	public void setNickname(String nickname) {
 		this.nickname = nickname;
 	}
-	public byte[] getPortrait() {
-		return portrait;
+	public String getPortrait() {
+		return new String(portrait);
 	}
 	public void setPortrait(byte[] portrait) {
 		this.portrait = portrait;

@@ -403,7 +403,7 @@ public class MySQLDataBase {
 					data.put("registertime", registertime);
 					data.put("priority", priority);
 					data.put("userid", userid);
-					data.put("portrait", portrait);
+					data.put("portrait", new String(portrait));
 					data.put("token", newToken);
 					
 				}
